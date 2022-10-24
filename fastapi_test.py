@@ -68,3 +68,59 @@ async def read_user(user_id: int):
         detail= "User not found!")
 
     return result
+
+@app.put("/user/{user_id}/", status_code=status.HTTP_202_ACCEPTED)
+async def update_user(user_id: int, record: UserInSchema):
+    """
+    Update User API
+    """
+    try:
+        query = f"select * from users where id = {user_id};"
+        cursor.execute(query)
+        result = cursor.fetchone()
+        if not result:
+            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": "User not found"})
+
+        query = f"""Update users set
+                    first_name = '{record.first_name}', 
+                    last_name = '{record.last_name}',
+                    email = '{record.email}', 
+                    password = '{record.password}', 
+                    contact_number = {record.contact_number},
+                    is_active = '{record.is_active}' 
+                    where id = {user_id};
+        """
+        cursor.execute(query)
+        conn.commit()
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail= "Something went wrong") from err
+
+    return record.dict()
+
+
+@app.delete("/user/{user_id}/", status_code=status.HTTP_202_ACCEPTED)
+async def delete_user(user_id: int):
+    """
+    Delete User API
+    """
+    try:
+        query = f"select * from users where id = {user_id};"
+        cursor.execute(query)
+        result = cursor.fetchone()
+        if not result:
+            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": "User not found"})
+
+        query = f"delete from users where id = {user_id}"
+        cursor.execute(query)
+        conn.commit()
+
+    except Exception as err:
+        print("Error -------->", err)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail= "Something went wrong") from err
+
+    return "User deleted successfully!"
+
