@@ -124,4 +124,3 @@ async def delete_user(user_id: int):
         detail= "Something went wrong") from err
 
     return "User deleted successfully!"
-
